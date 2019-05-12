@@ -84,7 +84,7 @@ echo new class
 ';
     }
 
-    private function home() { return '<h2>Home Page</h2><p>Lorem ipsum home.</p>'; }
+    private function home() { return '<h2>Home Page</h2><p>Test Page for Amezmo - Git Deployment Test.</p>'; }
     private function about() { return '<h2>About Page</h2><p>Lorem ipsum about.</p>'; }
     private function contact() { return '<h2>Contact Page</h2><p>Lorem ipsum contact.</p>'; }
 };
