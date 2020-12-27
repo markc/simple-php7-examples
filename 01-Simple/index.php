@@ -1,6 +1,6 @@
 <?php
-// index.php 20150101 - 20170302
-// Copyright (C) 2015-2017 Mark Constable <markc@renta.net> (AGPL-3.0)
+// index.php 20150101 - 20201227
+// Copyright (C) 2015-2021 Mark Constable <markc@renta.net> (AGPL-3.0)
 
 echo new class
 {
@@ -10,12 +10,12 @@ echo new class
     ],
     $out = [
         'doc'   => 'SPE::01',
-        'nav1'  => '',
+        'nav'  => '',
         'head'  => 'Simple',
         'main'  => '<p>Error: missing page!</p>',
-        'foot'  => 'Copyright (C) 2015-2017 Mark Constable (AGPL-3.0)',
+        'foot'  => 'Copyright (C) 2015-2021 Mark Constable (AGPL-3.0)',
     ],
-    $nav1 = [
+    $nav = [
         ['Home', '?m=home'],
         ['About', '?m=about'],
         ['Contact', '?m=contact'],
@@ -24,8 +24,10 @@ echo new class
     public function __construct()
     {
         $this->in['m'] = $_REQUEST['m'] ?? $this->in['m'];
+        
         if (method_exists($this, $this->in['m']))
             $this->out['main'] = $this->{$this->in['m']}();
+            
         foreach ($this->out as $k => $v)
             $this->out[$k] = method_exists($this, $k) ? $this->$k() : $v;
     }
@@ -35,13 +37,13 @@ echo new class
         return $this->html();
     }
 
-    private function nav1() : string
+    private function nav() : string
     {
         return '
       <nav>' . join('', array_map(function ($n) {
             return '
         <a href="' . $n[1] . '">' . $n[0] . '</a>';
-        }, $this->nav1)) . '
+        }, $this->nav)) . '
       </nav>';
     }
 
@@ -49,7 +51,7 @@ echo new class
     {
         return '
     <header>
-      <h1>' . $this->out['head'] . '</h1>' . $this->out['nav1'] . '
+      <h1>' . $this->out['head'] . '</h1>' . $this->out['nav'] . '
     </header>';
     }
 
@@ -71,6 +73,7 @@ echo new class
     private function html() : string
     {
         extract($this->out, EXTR_SKIP);
+        
         return '<!DOCTYPE html>
 <html lang="en">
   <head>
