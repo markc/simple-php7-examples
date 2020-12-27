@@ -1,10 +1,8 @@
 <?php
-// index.php 20150101 - 20170302
-// Copyright (C) 2015-2017 Mark Constable <markc@renta.net> (AGPL-3.0)
+// index.php 20150101 - 20201227
+// Copyright (C) 2015-2021 Mark Constable <markc@renta.net> (AGPL-3.0)
 
-declare(strict_types = 1);
-
-echo new class() extends Init
+echo new class
 {
     protected
     $email = 'markc@renta.net',
@@ -14,20 +12,17 @@ echo new class() extends Init
     $out = [
         'doc'   => 'SPE::02',
         'css'   => '',
-        'nav1'  => '',
+        'nav'   => '',
         'head'  => 'Styled',
         'main'  => 'Error: missing page!',
-        'foot'  => 'Copyright (C) 2015 Mark Constable (AGPL-3.0)',
+        'foot'  => 'Copyright (C) 2021 Mark Constable (AGPL-3.0)',
     ],
-    $nav1 = [
+    $nav = [
         ['Home', '?m=home'],
         ['About', '?m=about'],
         ['Contact', '?m=contact'],
     ];
-};
-
-class Init
-{
+    
     public function __construct()
     {
         foreach ($this->in as $k => $v)
@@ -49,90 +44,52 @@ class Init
     private function css() : string
     {
         return '
-    <link href="//fonts.googleapis.com/css?family=Roboto:100,300,400,500,300italic" rel="stylesheet" type="text/css">
-    <style>
-* { transition: 0.25s linear; }
-body {
-    background-color: #fff;
-    color: #444;
-    font-family: "Roboto", sans-serif;
-    font-weight: 300;
-    height: 50rem;
-    line-height: 1.5;
-    margin: 0 auto;
-    max-width: 42rem;
-}
-h1, h2, h3, nav, footer {
-    color: #0275d8;
-    font-weight: 300;
-    text-align: center;
-    margin: 0.5rem 0;
-}
-nav a, .btn {
-    background-color: #ffffff;
-    border-radius: 0.2em;
-    border: 0.01em solid #0275d8;
-    display: inline-block;
-    padding: 0.25em 1em;
-    font-family: "Roboto", sans-serif;
-    font-weight: 300;
-    font-size: 1rem;
-}
-nav a:hover, button:hover, input[type="submit"]:hover, .btn:hover  {
-    background-color: #0275d8;
-    color: #fff;
-    text-decoration: none;
-}
-label, input[type="text"], textarea, pre {
-    display: inline-block;
-    width: 100%;
-    padding: 0.5em;
-    font-size: 1rem;
-    box-sizing : border-box;
-}
-p { margin-top: 0; }
-a:link, a:visited { color: #0275d8; text-decoration: none; }
-a:hover { text-decoration: underline; }
-a.active { background-color: #2295f8; color: #ffffff; }
-a.active:hover { background-color: #2295f8; }
-.rhs { text-align: right; }
-.center { text-align: center; }
-
-@media (max-width: 46rem) { body { width: 92%; } }
-        </style>';
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">';
     }
 
-    private function nav1() : string
+    private function nav() : string
     {
         $m = '?m='.$this->in['m'];
-        return '
-      <nav>' . join('', array_map(function ($n) use ($m) {
-            $c = $m === $n[1] ? ' class="active"' : '';
+        
+        $a = join('', array_map(function ($n) use ($m) {
+            $c = $m === $n[1] ? ' active" aria-current="page"' : '"';
             return '
-        <a' . $c . ' href="' . $n[1] . '">' . $n[0] . '</a>';
-        }, $this->nav1)) . '
-      </nav>';
+            <li class="nav-item">
+              <a class="nav-link' . $c . ' href="' . $n[1] . '">' . $n[0] . '</a>
+            </li>';
+        }, $this->nav));
+        
+        return '
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+      <div class="container">
+        <a class="navbar-brand" href="#">' . $this->out['head'] . '</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">' . $a . '
+          </ul>
+        </div>
+      </div>
+    </nav>';      
     }
 
     private function head() : string
     {
-        return '
-    <header>
-      <h1>' . $this->out['head'] . '</h1>' . $this->out['nav1'] . '
-    </header>';
+        return $this->out['nav'];
     }
 
     private function main() : string
     {
         return '
-    <main>' . $this->out['main'] . '
+    <main class="container">' . $this->out['main'] . '
     </main>';
     }
 
     private function foot() : string
     {
         return '
-    <footer>
+    <footer class="container text-center p-4">
       <p><em><small>' . $this->out['foot'] . '</small></em></p>
     </footer>';
     }
@@ -148,6 +105,7 @@ a.active:hover { background-color: #2295f8; }
     <title>' . $doc . '</title>' . $css . '
   </head>
   <body>' . $head . $main . $foot . '
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
   </body>
 </html>
 ';
@@ -155,41 +113,48 @@ a.active:hover { background-color: #2295f8; }
 
     private function home() : string
     {
-        $this->nav1 = array_merge($this->nav1, [
-            ['Project Page', 'https://github.com/markc/spe/tree/master/02-Styled'],
-            ['Issue Tracker', 'https://github.com/markc/spe/issues'],
-        ]);
+        $this->nav = array_merge($this->nav, [['Project Page', 'https://github.com/markc/spe/tree/master/02-Styled']]);
+            
         return '
-      <h2>Home</h2>
-      <p>
-This is an ultra simple single-file PHP7 framework and template system example.
-Comments and pull requests are most welcome via the Issue Tracker link above.
-      </p>';
+      <div class="bg-light p-5 rounded">
+        <h1>Home Page</h1>
+        <p class="lead">
+This is an ultra simple single-file PHP8 plus Bootstrap 5 (beta) framework and template system example.
+Comments and pull requests are most welcome via the Issue Tracker link.
+        </p>
+        <a class="btn btn-lg btn-primary" href="https://github.com/markc/spe/issues" role="button">Issue Tracker &raquo;</a>
+      </div>';
     }
 
     private function about() : string
     {
         return '
-      <h2>About</h2>
-      <p>
-This is an example of a simple PHP7 "framework" to provide the core
+      <div class="bg-light p-5 rounded">
+        <h1>About Page</h1>
+        <p class="lead">
+This is an example of a simple PHP7 and PHP8 "framework" to provide the core
 structure for further experimental development with both the framework
-design and some of the new features of PHP7.
-      </p>';
+design and some of the new features of PHP7 and PHP8.
+        </p>
+      </div>';
     }
 
     private function contact() : string
     {
         return '
-      <h2>Email Contact Form</h2>
-      <form id="contact-send" method="post" onsubmit="return mailform(this);">
-        <p><input id="subject" required="" type="text" placeholder="Message Subject"></p>
-        <p><textarea id="message" rows="9" required=""placeholder="Message Content"></textarea></p>
-        <p class="rhs">
-          <small>(Note: Doesn\'t seem to work with Firefox 50.1)</small>
-          <input class="btn" type="submit" id="send" value="Send">
-        </p>
-      </form>
+      <div class="bg-light p-5 rounded">
+      <h1>Contact Page</h1>
+      <form class="mx-auto" style="width: 400px;" method="post" onsubmit="return mailform(this);">
+        <div class="mb-3">
+          <label for="subject" class="form-label">Subject</label>
+          <input type="text" class="form-control" id="subject">
+        </div>
+        <div class="mb-3">
+          <label for="message" class="form-label">Message</label>
+          <textarea class="form-control" id="message" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>      
       <script>
 function mailform(form) {
     location.href = "mailto:' . $this->email . '"
@@ -200,6 +165,7 @@ function mailform(form) {
     alert("Thank you for your message. We will get back to you as soon as possible.");
     return false;
 }
-      </script>';
+      </script>
+      </div>';
     }
-}
+};
