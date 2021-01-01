@@ -1,64 +1,74 @@
-<?php
-// index.php 20150101 - 20201227
+<?php declare(strict_types=1);
+
+// index.php 20150101 - 20210101
 // Copyright (C) 2015-2021 Mark Constable <markc@renta.net> (AGPL-3.0)
 
-echo new class
-{
-    protected
-    $email = 'markc@renta.net',
-    $in = [
-        'm'     => 'home',  // Method [home|about|contact]
-    ],
-    $out = [
-        'doc'   => 'SPE::02',
-        'css'   => '',
-        'nav'   => '',
-        'head'  => 'Styled',
-        'main'  => 'Error: missing page!',
-        'foot'  => 'Copyright (C) 2021 Mark Constable (AGPL-3.0)',
-    ],
-    $nav = [
-        ['Home', '?m=home'],
-        ['About', '?m=about'],
-        ['Contact', '?m=contact'],
+echo new class {
+
+    private $email = 'markc@renta.net';
+
+    private $in = [
+        'm' => 'home',
     ];
-    
+
+    private $out = [
+        'doc' => 'SPE::02',
+        'css' => '',
+        'nav' => '',
+        'head' => 'Styled',
+        'main' => 'Error: missing page!',
+        'foot' => 'Copyright (C) 2021 Mark Constable (AGPL-3.0)',
+    ];
+
+    private $nav = [
+        ['Home', 'home'],
+        ['About', 'about'],
+        ['Contact', 'contact']
+    ];
+
     public function __construct()
     {
-        foreach ($this->in as $k => $v)
-            $this->in[$k] = isset($_REQUEST[$k])
-                ? htmlentities(trim($_REQUEST[$k])) : $v;
+        $m = $_REQUEST['m'] ?? ($_REQUEST['p'] ?? '');
+        
+        $m = filter_var(trim($m, '/'), FILTER_SANITIZE_URL);
 
-        if (method_exists($this, $this->in['m']))
-            $this->out['main'] = $this->{$this->in['m']}();
+        if (empty($m)) {
+            $m = $this->in['m'];
+        }
+        
+        $this->in['m'] = $m;
+        
+        if (method_exists($this, $m)) {
+            $this->out['main'] = $this->{$m}();
+        }
 
-        foreach ($this->out as $k => $v)
-            $this->out[$k] = method_exists($this, $k) ? $this->$k() : $v;
+        foreach ($this->out as $k => $v) {
+            $this->out[$k] = method_exists($this, $k) ? $this->{$k}() : $v;
+        }
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->html();
     }
 
-    private function css() : string
+    private function css(): string
     {
         return '
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">';
     }
 
-    private function nav() : string
+    private function nav(): string
     {
-        $m = '?m='.$this->in['m'];
-        
-        $a = join('', array_map(function ($n) use ($m) {
-            $c = $m === $n[1] ? ' active" aria-current="page"' : '"';
+        $a = join('', array_map(function ($n) {
+            $url = (!isset($_REQUEST['p'])) ? "?m=$n[1]" : "$n[1]";
+            $c = $this->in['m'] === $n[1] ? ' active" aria-current="page"' : '"';
             return '
             <li class="nav-item">
-              <a class="nav-link' . $c . ' href="' . $n[1] . '">' . $n[0] . '</a>
+              <a class="nav-link' . $c . ' href="' . $url . '">' . $n[0] . '</a>
             </li>';
         }, $this->nav));
-        
+
         return '
     <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
       <div class="container">
@@ -71,22 +81,22 @@ echo new class
           </ul>
         </div>
       </div>
-    </nav>';      
+    </nav>';
     }
 
-    private function head() : string
+    private function head(): string
     {
         return $this->out['nav'];
     }
 
-    private function main() : string
+    private function main(): string
     {
         return '
     <main class="container">' . $this->out['main'] . '
     </main>';
     }
 
-    private function foot() : string
+    private function foot(): string
     {
         return '
     <footer class="container text-center p-4">
@@ -94,9 +104,10 @@ echo new class
     </footer>';
     }
 
-    private function html() : string
+    private function html(): string
     {
         extract($this->out, EXTR_SKIP);
+
         return '<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -111,35 +122,36 @@ echo new class
 ';
     }
 
-    private function home() : string
+    private function home(): string
     {
         $this->nav = array_merge($this->nav, [['Project Page', 'https://github.com/markc/spe/tree/master/02-Styled']]);
-            
+
         return '
       <div class="bg-light p-5 rounded">
         <h1>Home Page</h1>
         <p class="lead">
-This is an ultra simple single-file PHP8 plus Bootstrap 5 (beta) framework and template system example.
-Comments and pull requests are most welcome via the Issue Tracker link.
+This is an ultra simple single-file PHP8 plus Bootstrap 5 (beta) framework
+and template system example. Comments and pull requests are most welcome
+via the Issue Tracker link.
         </p>
         <a class="btn btn-lg btn-primary" href="https://github.com/markc/spe/issues" role="button">Issue Tracker &raquo;</a>
       </div>';
     }
 
-    private function about() : string
+    private function about(): string
     {
         return '
       <div class="bg-light p-5 rounded">
         <h1>About Page</h1>
         <p class="lead">
-This is an example of a simple PHP7 and PHP8 "framework" to provide the core
+This is an example of a simple PHP8 "framework" to provide the core
 structure for further experimental development with both the framework
 design and some of the new features of PHP7 and PHP8.
         </p>
       </div>';
     }
 
-    private function contact() : string
+    private function contact(): string
     {
         return '
       <div class="bg-light p-5 rounded">
