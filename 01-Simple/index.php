@@ -1,53 +1,64 @@
-<?php
-// index.php 20150101 - 20201227
+<?php declare(strict_types=1);
+
+// index.php 20150101 - 20201228
 // Copyright (C) 2015-2021 Mark Constable <markc@renta.net> (AGPL-3.0)
 
-echo new class
-{
-    private
-    $in = [
-        'm'     => 'home',      // Method action
-    ],
-    $out = [
-        'doc'   => 'SPE::01',
-        'nav'  => '',
-        'head'  => 'Simple',
-        'main'  => '<p>Error: missing page!</p>',
-        'foot'  => 'Copyright (C) 2015-2021 Mark Constable (AGPL-3.0)',
-    ],
-    $nav = [
-        ['Home', '?m=home'],
-        ['About', '?m=about'],
-        ['Contact', '?m=contact'],
+echo new class {
+
+    private array $in = [
+        'm' => 'home',
+    ];
+
+    private $out = [
+        'doc' => 'SPE::01',
+        'nav' => '',
+        'head' => 'Simple',
+        'main' => '<p>Error: missing page!</p>',
+        'foot' => 'Copyright (C) 2015-2021 Mark Constable (AGPL-3.0)',
+    ];
+
+    private $nav = [
+        ['Home', 'home'],
+        ['About', 'about'],
+        ['Contact', 'contact']
     ];
 
     public function __construct()
     {
-        $this->in['m'] = $_REQUEST['m'] ?? $this->in['m'];
+        $m = $_REQUEST['m'] ?? ($_REQUEST['p'] ?? '');
         
-        if (method_exists($this, $this->in['m']))
-            $this->out['main'] = $this->{$this->in['m']}();
-            
-        foreach ($this->out as $k => $v)
-            $this->out[$k] = method_exists($this, $k) ? $this->$k() : $v;
+        $m = filter_var(trim($m, '/'), FILTER_SANITIZE_URL);
+
+        if (empty($m)) {
+            $m = $this->in['m'];
+        }
+        
+        if (method_exists($this, $m)) {
+            $this->out['main'] = $this->{$m}();
+        }
+
+        foreach ($this->out as $k => $v) {
+            $this->out[$k] = method_exists($this, $k) ? $this->{$k}() : $v;
+        }
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->html();
     }
 
-    private function nav() : string
+    private function nav(): string
     {
         return '
       <nav>' . join('', array_map(function ($n) {
+            $url = (!isset($_REQUEST['p'])) ? "?m=$n[1]" : "$n[1]";
             return '
-        <a href="' . $n[1] . '">' . $n[0] . '</a>';
+        <a href="' . $url . '">' . $n[0] . '</a>';
         }, $this->nav)) . '
       </nav>';
     }
 
-    private function head() : string
+    private function head(): string
     {
         return '
     <header>
@@ -55,14 +66,14 @@ echo new class
     </header>';
     }
 
-    private function main() : string
+    private function main(): string
     {
         return '
     <main>' . $this->out['main'] . '
     </main>';
     }
 
-    private function foot() : string
+    private function foot(): string
     {
         return '
     <footer>
@@ -70,10 +81,10 @@ echo new class
     </footer>';
     }
 
-    private function html() : string
+    private function html(): string
     {
         extract($this->out, EXTR_SKIP);
-        
+
         return '<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -87,7 +98,18 @@ echo new class
 ';
     }
 
-    private function home() { return '<h2>Home Page</h2><p>Lorem ipsum home.</p>'; }
-    private function about() { return '<h2>About Page</h2><p>Lorem ipsum about.</p>'; }
-    private function contact() { return '<h2>Contact Page</h2><p>Lorem ipsum contact.</p>'; }
+    private function home(): string
+    {
+        return '<h2>Home Page</h2><p>Lorem ipsum home.</p>';
+    }
+
+    private function about(): string
+    {
+        return '<h2>About Page</h2><p>Lorem ipsum about.</p>';
+    }
+
+    private function contact(): string
+    {
+        return '<h2>Contact Page</h2><p>Lorem ipsum contact.</p>';
+    }
 };
