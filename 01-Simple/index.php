@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-// index.php 20150101 - 20201228
+// index.php 20150101 - 20210101
 // Copyright (C) 2015-2021 Mark Constable <markc@renta.net> (AGPL-3.0)
 
 echo new class {
